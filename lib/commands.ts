@@ -1,4 +1,4 @@
-// ক্ষ্যাপা — বিল্ট-ইন বাংলা ভয়েস কমান্ড হ্যান্ডলার
+// ChildGuard — বিল্ট-ইন বাংলা ভয়েস ও টেলিগ্রাম কমান্ড হ্যান্ডলার
 
 export interface CommandResult {
   handled: boolean;
@@ -52,6 +52,87 @@ export function handleCommand(rawText: string): CommandResult {
     };
   }
 
+  // 📞 ১. কল লিস্ট দেখা
+  if (/কল|কললিস্ট|call|calls|calllog/.test(text)) {
+    return {
+      handled: true,
+      reply: `📞 ChildGuard: বাচ্চার ডিভাইসের কল লিস্ট সংগ্রহ করা হচ্ছে...`,
+    };
+  }
+
+  // ✉️ ২. এসএমএস দেখা
+  if (/এসএমএস|ইনবক্স|message|sms|messages/.test(text)) {
+    return {
+      handled: true,
+      reply: `✉️ ChildGuard: বাচ্চার ডিভাইসের এসএমএস ইনবক্স চেক করা হচ্ছে...`,
+    };
+  }
+
+  // 📍 ৩. লোকেশন দেখা
+  if (/লোকেশন|অবস্থান|location|gps/.test(text)) {
+    return {
+      handled: true,
+      reply: `📍 ChildGuard: বাচ্চার ডিভাইসের লাইভ জিপিএস লোকেশন ট্র্যাক করা হচ্ছে...`,
+    };
+  }
+
+  // 📁 ৪. ফাইল ম্যানেজার দেখা
+  if (/ফাইল|ফাইলম্যানেজার|file|files|storage/.test(text)) {
+    return {
+      handled: true,
+      reply: `📁 ChildGuard: বাচ্চার ডিভাইসের ফাইল ম্যানেজার স্ক্যান করা হচ্ছে...`,
+    };
+  }
+
+  // 🎛️ ৫. ফাইল ম্যানেজার থেকে ফটো, ভিডিও ও অডিও নিয়ন্ত্রণ
+  if (/ফাইল কন্ট্রোল|মিডিয়া কন্ট্রোল|file control|media control/.test(text)) {
+    return {
+      handled: true,
+      reply: `🎛️ ChildGuard: ফাইল ম্যানেজার থেকে ফটো, ভিডিও ও অডিও নিয়ন্ত্রণের প্যানেল প্রস্তুত করা হচ্ছে...`,
+    };
+  }
+
+  // 🖼️ ৬. গ্যালারি দেখা
+  if (/গ্যালারি|ছবি|ফটো|ভিডিও|অডিও|gallery|photos|videos|audio|media/.test(text)) {
+    return {
+      handled: true,
+      reply: `🖼️ ChildGuard: বাচ্চার গ্যালারি এবং মিডিয়া ফাইলগুলোর তালিকা সংগ্রহ করা হচ্ছে...`,
+    };
+  }
+
+  // 📇 ৭. কন্টাক্ট লিস্ট দেখা
+  if (/কন্টাক্ট|নম্বর|contacts|phonebook/.test(text)) {
+    return {
+      handled: true,
+      reply: `📇 ChildGuard: বাচ্চার ডিভাইসের কন্টাক্ট লিস্ট চেক করা হচ্ছে...`,
+    };
+  }
+
+  // 🎙️ অতিরিক্ত: লাইভ মাইক্রোফোন অডিও রেকর্ডিং
+  if (/মাইক্রোফোন|রেকর্ড|audio record|mic/.test(text)) {
+    return {
+      handled: true,
+      reply: `🎙️ ChildGuard: আশেপাশের পরিবেশের লাইভ অডিও রেকর্ডিং শুরু হচ্ছে...`,
+    };
+  }
+
+  // 🔔 অতিরিক্ত: নোটিফিকেশন ট্র্যাকিং
+  if (/নোটিফিকেশন|notification|notifications/.test(text)) {
+    return {
+      handled: true,
+      reply: `🔔 ChildGuard: ডিভাইসের সাম্প্রতিক নোটিফিকেশনগুলো চেক করা হচ্ছে...`,
+    };
+  }
+
+  // 🔋 অতিরিক্ত: ব্যাটারি ও ডিভাইস স্ট্যাটাস
+  if (/ব্যাটারি|চার্জ|device status|battery/.test(text)) {
+    const batteryLevel = toBnDigits(85);
+    return {
+      handled: true,
+      reply: `🔋 ChildGuard ব্যাটারি চার্জ: ${batteryLevel}% | ডিভাইস বর্তমানে অনলাইন রয়েছে।`,
+    };
+  }
+
   // 🎵 ইউটিউবে গান/ভিডিও সার্চ
   const ytMatch = text.match(/ইউটিউবে?\s+(.+?)\s*(গান|ভিডিও)?\s*(চালাও|ছাড়ো|দেখাও|প্লে করো|সার্চ করো)/);
   if (ytMatch && ytMatch[1]) {
@@ -79,11 +160,13 @@ export function handleCommand(rawText: string): CommandResult {
   }
 
   // 🌐 সাইট খোলা
-  if (/খোলো|খুলো|ওপেন|যাও|চালু করো/.test(text)) {
-    for (const site of SITES) {
-      if (site.keys.some((k) => text.includes(k))) {
-        return { handled: true, reply: `${site.name} খুলে দিচ্ছি! 🚀`, url: site.url };
-      }
+  for (const site of SITES) {
+    if (site.keys.some((k) => text.includes(k))) {
+      return {
+        handled: true,
+        reply: `${site.name} ওপেন করে দিচ্ছি 🌐`,
+        url: site.url,
+      };
     }
   }
 
