@@ -1,0 +1,142 @@
+-- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:51:9-59:20
+	android:grantUriPermissions
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:55:13-47
+	android:authorities
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:53:13-64
+	android:exported
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:54:13-37
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:52:13-62
+manifest
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:2:1-61:12
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:2:1-61:12
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:2:1-61:12
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:2:1-61:12
+	package
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:5:22-64
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:6:5-81
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:6:22-78
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:7:5-77
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:7:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_DATA_SYNC
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:8:5-87
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:8:22-84
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:9:5-77
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:9:22-74
+uses-permission#android.permission.MANAGE_EXTERNAL_STORAGE
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:10:5-11:40
+	tools:ignore
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:11:9-37
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:10:22-79
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:13:5-14:38
+	android:maxSdkVersion
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:14:9-35
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:13:22-77
+uses-permission#android.permission.READ_MEDIA_IMAGES
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:15:5-76
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:15:22-73
+uses-permission#android.permission.READ_MEDIA_VIDEO
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:16:5-75
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:16:22-72
+uses-permission#android.permission.PACKAGE_USAGE_STATS
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:18:5-19:47
+	tools:ignore
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:19:9-44
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:18:22-75
+uses-permission#android.permission.QUERY_ALL_PACKAGES
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:20:5-21:53
+	tools:ignore
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:21:9-50
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:20:22-74
+application
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:23:5-60:19
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:23:5-60:19
+	android:extractNativeLibs
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	android:label
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:24:9-41
+	android:icon
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:25:9-45
+	android:allowBackup
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:26:9-36
+	android:theme
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:27:9-56
+activity#com.example.childguard.MainActivity
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:29:9-36:20
+	android:exported
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:31:13-36
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:30:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:32:13-35:29
+action#android.intent.action.MAIN
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:33:17-69
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:33:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:34:17-77
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:34:27-74
+service#com.example.childguard.MonitorService
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:38:9-41:56
+	android:exported
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:40:13-37
+	android:foregroundServiceType
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:41:13-53
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:39:13-43
+receiver#com.example.childguard.BootReceiver
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:43:9-49:20
+	android:exported
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:45:13-37
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:44:13-41
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:46:13-48:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:47:17-79
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:47:25-76
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:56:13-58:54
+	android:resource
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:58:17-51
+	android:name
+		ADDED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml:57:17-67
+uses-sdk
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /data/data/com.termux/files/home/ChildGuard/app/src/main/AndroidManifest.xml

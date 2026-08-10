@@ -1,0 +1,1 @@
+/data/data/com.termux/files/home/ChildGuard/app/build/intermediates/merged_res/debug/drawable_ic_launcher.xml.flat /data/data/com.termux/files/home/ChildGuard/app/build/intermediates/merged_res/debug/values_values.arsc.flat /data/data/com.termux/files/home/ChildGuard/app/build/intermediates/merged_res/debug/xml_file_paths.xml.flat 
