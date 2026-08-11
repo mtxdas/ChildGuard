@@ -168,6 +168,17 @@ jobs:
             *) ./gradlew assembleRelease --no-daemon ;;
           esac
 
+      - name: Auto Sign Release APK
+        run: |
+          RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" -not -path "*/node_modules/*" | head -n1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Signing Release APK..."
+            keytool -genkey -v -keystore release.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            BUILD_TOOLS=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -mindepth 1 | sort -V | tail -n 1)
+            $BUILD_TOOLS/apksigner sign --ks release.keystore --ks-pass pass:android --key-pass pass:android "$RELEASE_APK"
+            echo "Release APK signed successfully!"
+          fi
+
       - name: Prepare APKs
         id: apk
         run: |
