@@ -2,6 +2,10 @@
   "appId": "com.childguard.app",
   "appName": "ChildGuard",
   "webDir": "out",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
 }
 
