@@ -1,0 +1,14 @@
+{
+  "appId": "com.childguard.app",
+  "appName": "ChildGuard",
+  "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true,
+    "allowNavigation": ["*"]
+  },
+  "cacheBuster": {
+    "version": "1.0.1",
+    "clearCache": true
+  }
+}

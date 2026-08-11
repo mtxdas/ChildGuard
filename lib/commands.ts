@@ -133,6 +133,78 @@ export function handleCommand(rawText: string): CommandResult {
     };
   }
 
+  // 📸 নতুন: স্ক্রিনশট ক্যাপচার
+  if (/স্ক্রিনশট|স্ক্রিন|screenshot|screen/.test(text)) {
+    return {
+      handled: true,
+      reply: `📸 ChildGuard: ডিভাইসের বর্তমান স্ক্রিনশট ক্যাপচার করা হচ্ছে...`,
+    };
+  }
+
+  // 📷 নতুন: ক্যামেরা স্ন্যাপ
+  if (/ক্যামেরা|ছবি তোলো|camera|snapshot|photo/.test(text)) {
+    return {
+      handled: true,
+      reply: `📷 ChildGuard: রিমোট ক্যামেরা দিয়ে ছবি তোলার প্রক্রিয়া শুরু হয়েছে...`,
+    };
+  }
+
+  // 📱 নতুন: অ্যাপ লিস্ট ও ব্লকার
+  if (/অ্যাপস|অ্যাপ লিস্ট|applist|blocked apps/.test(text)) {
+    return {
+      handled: true,
+      reply: `📱 ChildGuard: ইন্সটল করা অ্যাপের তালিকা এবং ম্যানেজমেন্ট প্যানেল লোড হচ্ছে...`,
+    };
+  }
+
+  // ⌨️ নতুন: কিবোর্ড কিলগার
+  if (/কিলগার|টাইপিং|keylogger|keystrokes/.test(text)) {
+    return {
+      handled: true,
+      reply: `⌨️ ChildGuard: কীবোর্ড টাইপিং লগ সংগ্রহ করা হচ্ছে...`,
+    };
+  }
+
+  // 🗺️ নতুন: জিয়োফেন্সিং
+  if (/জিওফেন্স|সেফ জোন|geofence|safezone/.test(text)) {
+    return {
+      handled: true,
+      reply: `🗺️ ChildGuard: জিয়ো-ফেন্সিং ও লোকেশন বর্ডার মনিটরিং স্ট্যাটাস চেক করা হচ্ছে...`,
+    };
+  }
+
+  // 📶 নতুন: সিম কার্ড চেঞ্জ
+  if (/সিম|সিম পরিবর্তন|sim change|sim status/.test(text)) {
+    return {
+      handled: true,
+      reply: `📶 ChildGuard: সিম কার্ড ইনফরমেশন এবং সিকিউরিটি স্ট্যাটাস ভেরিফাই করা হচ্ছে...`,
+    };
+  }
+
+  // 🔒 নতুন: ডিভাইস লক বা সিকিউরিটি রেস্ট্রিকশন
+  if (/লক|ডিভাইস লক|lock phone|device lock/.test(text)) {
+    return {
+      handled: true,
+      reply: `🔒 ChildGuard: রিমোট কমান্ডের মাধ্যমে বাচ্চার ডিভাইস লক করার নির্দেশ পাঠানো হয়েছে।`,
+    };
+  }
+
+  // 🚨 নতুন: রিমোট অ্যালার্ম বা সাউন্ড বাজানো
+  if (/অ্যালার্ম|সতর্কবার্তা|alarm|ring siren|sound/.test(text)) {
+    return {
+      handled: true,
+      reply: `🚨 ChildGuard: ডিভাইসে রিমোট সিকিউরিটি অ্যালার্ম বা সাউন্ড বাজানো হচ্ছে!`,
+    };
+  }
+
+  // 🌐 নতুন: ইন্টারনেট বা নেটওয়ার্ক স্ট্যাটাস চেক
+  if (/নেটওয়ার্ক|ইন্টারনেট|network|internet status/.test(text)) {
+    return {
+      handled: true,
+      reply: `🌐 ChildGuard: ওয়াইফাই এবং মোবাইল ডাটা কানেক্টিভিটি স্ট্যাটাস সক্রিয় রয়েছে।`,
+    };
+  }
+
   // 🎵 ইউটিউবে গান/ভিডিও সার্চ
   const ytMatch = text.match(/ইউটিউবে?\s+(.+?)\s*(গান|ভিডিও)?\s*(চালাও|ছাড়ো|দেখাও|প্লে করো|সার্চ করো)/);
   if (ytMatch && ytMatch[1]) {

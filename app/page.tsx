@@ -27,12 +27,12 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-slate-900 to-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+    <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
+      <div className="mx-auto max-w-3xl text-center">
         <div className="mb-4 inline-block rounded-full bg-blue-500/10 p-4 border border-blue-500/20">
           <Shield className="h-12 w-12 text-blue-400 mx-auto" />
         </div>
-        <h1 className="mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-5xl font-extrabold tracking-tight">
+        <h1 className="mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
           ChildGuard
         </h1>
         <p className="mb-2 text-lg text-zinc-300">
