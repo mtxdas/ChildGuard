@@ -1,4 +1,4 @@
-Name: Build Android APK with Base URL
+name: Build Android APK with Base URL
 
 on:
   push:
