@@ -65,16 +65,14 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             npm ci || npm install
-            # Remove Termux specific AAPT2 override if present in gradle.properties
-            find . -name "gradle.properties" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
-            # Run Capacitor Sync/Copy
+            find . -name "gradle.properties" -not -path "*/node_modules/*" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
             npx cap sync android || npx cap sync || true
           fi
 
       - name: Determine Version
         id: version
         run: |
-          GRADLE_FILE=$(find . -path "*/app/build.gradle*" -not -path "*/.gradle/*" -not -path "*/build/*" -type f | head -n1)
+          GRADLE_FILE=$(find . -path "*/app/build.gradle*" -not -path "*/.gradle/*" -not -path "*/build/*" -not -path "*/node_modules/*" -type f | head -n1)
           VERSION_NAME=""
           VERSION_CODE=""
           if [ -f "$GRADLE_FILE" ]; then
@@ -102,7 +100,7 @@ jobs:
           JSON="{\"host\":\"$BASE/\",\"socket\":\"$SOCKET\"}"
           DATA=$(echo -n "$JSON" | base64 -w0)
           
-          FILE=$(find . -name "AppTools.kt" | head -n1)
+          FILE=$(find . -name "AppTools.kt" -not -path "*/node_modules/*" | head -n1)
           if [ -f "$FILE" ]; then
             sed -i "s|private const val DEFAULT_DATA = \".*\"|private const val DEFAULT_DATA = \"$DATA\"|" "$FILE"
             echo "Injected Base URL into $FILE: $BASE"
@@ -119,13 +117,15 @@ jobs:
 
       - name: Make Gradle Executable & Build APK
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n1)
+          # Find gradlew excluding node_modules
+          GRADLEW_PATH=$(find . -name "gradlew" -not -path "*/node_modules/*" -type f | head -n1)
           if [ -z "$GRADLEW_PATH" ]; then
-            echo "Error: gradlew file not found in repository!"
+            echo "Error: gradlew file not found in main repository!"
             exit 1
           fi
           
           PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Navigating to project directory: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           chmod +x gradlew
 
@@ -145,7 +145,7 @@ jobs:
           RELEASE_OUTPUT=""
 
           if [ "$BUILD_TYPE" = "debug" ] || [ "$BUILD_TYPE" = "both" ]; then
-            DEBUG_APK=$(find . -path "*/build/outputs/apk/*" -name "*debug*.apk" | head -n1)
+            DEBUG_APK=$(find . -path "*/build/outputs/apk/*" -name "*debug*.apk" -not -path "*/node_modules/*" | head -n1)
             if [ -n "$DEBUG_APK" ]; then
               cp "$DEBUG_APK" "./Spybot-v${VERSION}-debug.apk"
               DEBUG_OUTPUT="Spybot-v${VERSION}-debug.apk"
@@ -153,8 +153,8 @@ jobs:
           fi
 
           if [ "$BUILD_TYPE" = "release" ] || [ "$BUILD_TYPE" = "both" ]; then
-            RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" | head -n1)
-            if [ -n "$RELEASE_APK" ]; me
+            RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" -not -path "*/node_modules/*" | head -n1)
+            if [ -n "$RELEASE_APK" ]; then
               cp "$RELEASE_APK" "./Spybot-v${VERSION}-release.apk"
               RELEASE_OUTPUT="Spybot-v${VERSION}-release.apk"
             fi
