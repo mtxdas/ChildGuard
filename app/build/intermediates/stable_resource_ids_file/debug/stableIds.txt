@@ -1,4 +1,0 @@
-com.example.childguard:xml/file_paths = 0x7f040000
-com.example.childguard:style/Theme.AppCompat.DayNight = 0x7f030000
-com.example.childguard:string/app_name = 0x7f020000
-com.example.childguard:drawable/ic_launcher = 0x7f010000

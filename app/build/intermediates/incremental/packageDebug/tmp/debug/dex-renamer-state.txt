@@ -1,4 +1,0 @@
-#Sun Aug 09 20:25:24 GMT 2026
-base.0=/data/data/com.termux/files/home/ChildGuard/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
-path.0=0/classes.dex
-renamed.0=classes.dex

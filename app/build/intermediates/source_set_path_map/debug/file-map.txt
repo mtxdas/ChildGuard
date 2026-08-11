@@ -1,7 +1,0 @@
-com.example.childguard.app-pngs-0 /data/data/com.termux/files/home/ChildGuard/app/build/generated/res/pngs/debug
-com.example.childguard.app-resValues-1 /data/data/com.termux/files/home/ChildGuard/app/build/generated/res/resValues/debug
-com.example.childguard.app-packageDebugResources-2 /data/data/com.termux/files/home/ChildGuard/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-com.example.childguard.app-packageDebugResources-3 /data/data/com.termux/files/home/ChildGuard/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-com.example.childguard.app-merged_res-4 /data/data/com.termux/files/home/ChildGuard/app/build/intermediates/merged_res/debug
-com.example.childguard.app-debug-5 /data/data/com.termux/files/home/ChildGuard/app/src/debug/res
-com.example.childguard.app-main-6 /data/data/com.termux/files/home/ChildGuard/app/src/main/res
