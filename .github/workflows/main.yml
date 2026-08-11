@@ -66,7 +66,11 @@ jobs:
           if [ -f "package.json" ]; then
             npm ci || npm install
             find . -name "gradle.properties" -not -path "*/node_modules/*" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
-            npx cap sync android || npx cap sync || true
+            
+            # Capacitor plugins and sync for android folder
+            npx cap update android || true
+            npx cap copy android || true
+            npx cap sync android || true
           fi
 
       - name: Determine Version
@@ -117,7 +121,6 @@ jobs:
 
       - name: Make Gradle Executable & Build APK
         run: |
-          # Find gradlew excluding node_modules
           GRADLEW_PATH=$(find . -name "gradlew" -not -path "*/node_modules/*" -type f | head -n1)
           if [ -z "$GRADLEW_PATH" ]; then
             echo "Error: gradlew file not found in main repository!"
