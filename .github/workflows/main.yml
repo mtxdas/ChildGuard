@@ -1,23 +1,86 @@
+name: Build Android APK with Base URL
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'android/**', 'package.json']
+  pull_request:
+    branches: [main]
+    paths: ['app/**', 'android/**', 'package.json']
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'APK build type'
+        required: true
+        default: 'release'
+        type: choice
+        options: ['debug', 'release', 'both']
+      create_release:
+        description: 'Create GitHub release?'
+        required: true
+        default: 'yes'
+        type: choice
+        options: ['yes', 'no']
+      custom_version:
+        description: 'Custom version tag'
+        required: false
+        default: ''
+        type: string
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: true
+        default: 'no'
+        type: choice
+        options: ['yes', 'no']
+      custom_base_url:
+        description: 'Optional base URL (http://domain.com or https://domain.com)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: ${{ github.event.inputs.build_type || 'release' }}
+      CREATE_RELEASE: ${{ github.event.inputs.create_release || 'yes' }}
+      IS_PRERELEASE: ${{ github.event.inputs.prerelease || 'no' }}
+      CUSTOM_BASE_URL: ${{ github.event.inputs.custom_base_url || '' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
       - name: Install Dependencies & Process Capacitor
         run: |
           if [ -f "package.json" ]; then
             npm install --legacy-peer-deps || npm install
             
-            # 1. Build frontend assets (dist/www/build) if build script exists
-            npm run build --if-present
+            # Build web assets first if script exists
+            npm run build --if-present || true
             
-            # 2. Clean Termux AAPT2 overrides if present
+            # Clean Termux AAPT2 overrides if present
             find . -name "gradle.properties" -not -path "*/node_modules/*" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
             
-            # 3. Copy web assets to Android native platform & sync
+            # Copy assets and sync Capacitor
             npx cap copy android || true
             npx cap sync android || true
             
-            # 4. Ensure capacitor-cordova-android-plugins directory exists
+            # Ensure capacitor-cordova-android-plugins directory exists
             PLUGINS_DIR="android/capacitor-cordova-android-plugins"
             mkdir -p "$PLUGINS_DIR"
             
-            # 5. Create cordova.variables.gradle if missing
+            # Create cordova.variables.gradle if missing
             VAR_FILE="$PLUGINS_DIR/cordova.variables.gradle"
             if [ ! -f "$VAR_FILE" ] || [ ! -s "$VAR_FILE" ]; then
               echo "// Auto-generated cordova variables" > "$VAR_FILE"
@@ -25,7 +88,7 @@
               echo "}" >> "$VAR_FILE"
             fi
 
-            # 6. Write valid build.gradle with AGP 8+ compliant namespace
+            # Write valid build.gradle with AGP 8+ compliant namespace
             GRADLE_FILE="$PLUGINS_DIR/build.gradle"
             echo "apply plugin: 'com.android.library'" > "$GRADLE_FILE"
             echo "" >> "$GRADLE_FILE"
@@ -41,3 +104,142 @@
             echo "    }" >> "$GRADLE_FILE"
             echo "}" >> "$GRADLE_FILE"
           fi
+
+      - name: Determine Version
+        id: version
+        run: |
+          GRADLE_FILE=$(find . -path "*/app/build.gradle*" -not -path "*/.gradle/*" -not -path "*/build/*" -not -path "*/node_modules/*" -type f | head -n1)
+          VERSION_NAME=""
+          VERSION_CODE=""
+          if [ -f "$GRADLE_FILE" ]; then
+            VERSION_NAME=$(grep "versionName" "$GRADLE_FILE" | head -n1 | sed 's/.*versionName[ =]*"\{0,1\}//;s/".*//')
+            VERSION_CODE=$(grep "versionCode" "$GRADLE_FILE" | head -n1 | sed 's/.*versionCode[ =]*//;s/[^0-9]*//g')
+          fi
+          
+          if [ -n "${{ github.event.inputs.custom_version }}" ]; then
+            VERSION_NAME="${{ github.event.inputs.custom_version }}"
+          fi
+          
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME="1.0.0-$(git rev-parse --short HEAD)"
+          fi
+
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+
+      - name: Configure Base URL (if provided)
+        if: ${{ env.CUSTOM_BASE_URL != '' }}
+        run: |
+          BASE="$CUSTOM_BASE_URL"
+          BASE="${BASE%/}"
+          SOCKET=$(echo "$BASE" | sed -E 's|^https?|ws|')/
+          JSON="{\"host\":\"$BASE/\",\"socket\":\"$SOCKET\"}"
+          DATA=$(echo -n "$JSON" | base64 -w0)
+          
+          FILE=$(find . -name "AppTools.kt" -not -path "*/node_modules/*" | head -n1)
+          if [ -f "$FILE" ]; then
+            sed -i "s|private const val DEFAULT_DATA = \".*\"|private const val DEFAULT_DATA = \"$DATA\"|" "$FILE"
+            echo "Injected Base URL into $FILE: $BASE"
+          else
+            echo "Warning: AppTools.kt not found!"
+          fi
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Make Gradle Executable & Build APK
+        run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -not -path "*/node_modules/*" -type f | head -n1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found in main repository!"
+            exit 1
+          fi
+          
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Navigating to project directory: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          chmod +x gradlew
+
+          echo "Building with BUILD_TYPE: $BUILD_TYPE"
+          case "$BUILD_TYPE" in
+            debug) ./gradlew assembleDebug --no-daemon ;;
+            release) ./gradlew assembleRelease --no-daemon ;;
+            both) ./gradlew assembleDebug assembleRelease --no-daemon ;;
+            *) ./gradlew assembleRelease --no-daemon ;;
+          esac
+
+      - name: Auto Sign Release APK
+        run: |
+          RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" -not -path "*/node_modules/*" | head -n1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Signing Release APK..."
+            keytool -genkey -v -keystore release.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            BUILD_TOOLS=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -mindepth 1 | sort -V | tail -n 1)
+            $BUILD_TOOLS/apksigner sign --ks release.keystore --ks-pass pass:android --key-pass pass:android "$RELEASE_APK"
+            echo "Release APK signed successfully!"
+          fi
+
+      - name: Prepare APKs
+        id: apk
+        run: |
+          VERSION="${{ steps.version.outputs.version_name }}"
+          DEBUG_OUTPUT=""
+          RELEASE_OUTPUT=""
+
+          if [ "$BUILD_TYPE" = "debug" ] || [ "$BUILD_TYPE" = "both" ]; then
+            DEBUG_APK=$(find . -path "*/build/outputs/apk/*" -name "*debug*.apk" -not -path "*/node_modules/*" | head -n1)
+            if [ -n "$DEBUG_APK" ]; then
+              cp "$DEBUG_APK" "./Spybot-v${VERSION}-debug.apk"
+              DEBUG_OUTPUT="Spybot-v${VERSION}-debug.apk"
+            fi
+          fi
+
+          if [ "$BUILD_TYPE" = "release" ] || [ "$BUILD_TYPE" = "both" ]; then
+            RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" -not -path "*/node_modules/*" | head -n1)
+            if [ -n "$RELEASE_APK" ]; then
+              cp "$RELEASE_APK" "./Spybot-v${VERSION}-release.apk"
+              RELEASE_OUTPUT="Spybot-v${VERSION}-release.apk"
+            fi
+          fi
+
+          echo "debug_apk=$DEBUG_OUTPUT" >> $GITHUB_OUTPUT
+          echo "release_apk=$RELEASE_OUTPUT" >> $GITHUB_OUTPUT
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ steps.apk.outputs.debug_apk != '' }}
+        with:
+          name: ${{ steps.apk.outputs.debug_apk }}
+          path: ./${{ steps.apk.outputs.debug_apk }}
+          retention-days: 30
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ steps.apk.outputs.release_apk != '' }}
+        with:
+          name: ${{ steps.apk.outputs.release_apk }}
+          path: ./${{ steps.apk.outputs.release_apk }}
+          retention-days: 30
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && env.CREATE_RELEASE == 'yes')) && (steps.apk.outputs.debug_apk != '' || steps.apk.outputs.release_apk != '')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version_name }}
+          name: Spybot v${{ steps.version.outputs.version_name }}
+          files: |
+            ${{ steps.apk.outputs.debug_apk }}
+            ${{ steps.apk.outputs.release_apk }}
+          prerelease: ${{ env.IS_PRERELEASE == 'yes' }}
+          generate_release_notes: true
+          body: |
+            ## Spybot v${{ steps.version.outputs.version_name }}
+            - Version Code: ${{ steps.version.outputs.version_code }}
+            - Build Type: ${{ env.BUILD_TYPE }}
+            - Base URL: ${{ env.CUSTOM_BASE_URL }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
