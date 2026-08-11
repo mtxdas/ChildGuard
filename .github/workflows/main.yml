@@ -3,10 +3,10 @@ name: Build Android APK with Base URL
 on:
   push:
     branches: [main]
-    paths: ['app/**']
+    paths: ['app/**', 'android/**', 'package.json']
   pull_request:
     branches: [main]
-    paths: ['app/**']
+    paths: ['app/**', 'android/**', 'package.json']
   workflow_dispatch:
     inputs:
       build_type:
@@ -54,6 +54,22 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install NPM Dependencies & Sync Capacitor
+        run: |
+          if [ -f "package.json" ]; then
+            npm ci || npm install
+            # Remove Termux specific AAPT2 override if present in gradle.properties
+            find . -name "gradle.properties" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
+            # Run Capacitor Sync/Copy
+            npx cap sync android || npx cap sync || true
+          fi
 
       - name: Determine Version
         id: version
@@ -138,7 +154,7 @@ jobs:
 
           if [ "$BUILD_TYPE" = "release" ] || [ "$BUILD_TYPE" = "both" ]; then
             RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" | head -n1)
-            if [ -n "$RELEASE_APK" ]; then
+            if [ -n "$RELEASE_APK" ]; me
               cp "$RELEASE_APK" "./Spybot-v${VERSION}-release.apk"
               RELEASE_OUTPUT="Spybot-v${VERSION}-release.apk"
             fi
