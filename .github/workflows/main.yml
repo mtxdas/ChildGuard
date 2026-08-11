@@ -1,4 +1,4 @@
-name: Build Android APK with Base URL
+Name: Build Android APK with Base URL
 
 on:
   push:
@@ -46,22 +46,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BUILD_TYPE: ${{ github.event.inputs.build_type }}
-      CREATE_RELEASE: ${{ github.event.inputs.create_release }}
-      IS_PRERELEASE: ${{ github.event.inputs.prerelease }}
-      CUSTOM_BASE_URL: ${{ github.event.inputs.custom_base_url }}
+      BUILD_TYPE: ${{ github.event.inputs.build_type || 'release' }}
+      CREATE_RELEASE: ${{ github.event.inputs.create_release || 'yes' }}
+      IS_PRERELEASE: ${{ github.event.inputs.prerelease || 'no' }}
+      CUSTOM_BASE_URL: ${{ github.event.inputs.custom_base_url || '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Determine Version
         id: version
         run: |
-          GRADLE_FILE=$(find ./app -path "*/app/build.gradle*" -not -path "*/.gradle/*" -not -path "*/build/*" -type f | head -n1)
-          VERSION_NAME=$(grep "versionName" "$GRADLE_FILE" | sed 's/.*versionName[ =]*"\{0,1\}//;s/".*//')
-          VERSION_CODE=$(grep "versionCode" "$GRADLE_FILE" | sed 's/.*versionCode[ =]*//')
-          [ -n "${{ github.event.inputs.custom_version }}" ] && VERSION_NAME="${{ github.event.inputs.custom_version }}"
-          [ -z "$VERSION_NAME" ] && VERSION_NAME="1.0.0-$(git rev-parse --short HEAD)"
+          GRADLE_FILE=$(find . -path "*/app/build.gradle*" -not -path "*/.gradle/*" -not -path "*/build/*" -type f | head -n1)
+          VERSION_NAME=""
+          VERSION_CODE=""
+          if [ -f "$GRADLE_FILE" ]; then
+            VERSION_NAME=$(grep "versionName" "$GRADLE_FILE" | head -n1 | sed 's/.*versionName[ =]*"\{0,1\}//;s/".*//')
+            VERSION_CODE=$(grep "versionCode" "$GRADLE_FILE" | head -n1 | sed 's/.*versionCode[ =]*//;s/[^0-9]*//g')
+          fi
+          
+          if [ -n "${{ github.event.inputs.custom_version }}" ]; then
+            VERSION_NAME="${{ github.event.inputs.custom_version }}"
+          fi
+          
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME="1.0.0-$(git rev-parse --short HEAD)"
+          fi
+
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
 
@@ -73,57 +85,78 @@ jobs:
           SOCKET=$(echo "$BASE" | sed -E 's|^https?|ws|')/
           JSON="{\"host\":\"$BASE/\",\"socket\":\"$SOCKET\"}"
           DATA=$(echo -n "$JSON" | base64 -w0)
-          FILE="./app/app/src/main/java/com/spybot/app/Utils/AppTools.kt"
-          sed -i "s|private const val DEFAULT_DATA = \".*\"|private const val DEFAULT_DATA = \"$DATA\"|" "$FILE"
-          echo "Injected Base URL into AppTools.kt: $BASE"
+          
+          FILE=$(find . -name "AppTools.kt" | head -n1)
+          if [ -f "$FILE" ]; then
+            sed -i "s|private const val DEFAULT_DATA = \".*\"|private const val DEFAULT_DATA = \"$DATA\"|" "$FILE"
+            echo "Injected Base URL into $FILE: $BASE"
+          else
+            echo "Warning: AppTools.kt not found!"
+          fi
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
           cache: gradle
 
-      - name: Build APK
-        working-directory: ./app
+      - name: Make Gradle Executable & Build APK
         run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found in repository!"
+            exit 1
+          fi
+          
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$PROJECT_DIR"
           chmod +x gradlew
+
+          echo "Building with BUILD_TYPE: $BUILD_TYPE"
           case "$BUILD_TYPE" in
             debug) ./gradlew assembleDebug ;;
             release) ./gradlew assembleRelease ;;
             both) ./gradlew assembleDebug assembleRelease ;;
+            *) ./gradlew assembleRelease ;;
           esac
 
       - name: Prepare APKs
         id: apk
         run: |
           VERSION="${{ steps.version.outputs.version_name }}"
-          echo "debug_apk=" >> $GITHUB_OUTPUT
-          echo "release_apk=" >> $GITHUB_OUTPUT
+          DEBUG_OUTPUT=""
+          RELEASE_OUTPUT=""
 
           if [ "$BUILD_TYPE" = "debug" ] || [ "$BUILD_TYPE" = "both" ]; then
-            DEBUG_APK=$(find ./app -name "*debug*.apk" | head -n1)
+            DEBUG_APK=$(find . -path "*/build/outputs/apk/*" -name "*debug*.apk" | head -n1)
             if [ -n "$DEBUG_APK" ]; then
-              cp "$DEBUG_APK" "Spybot-v${VERSION}-debug.apk"
-              echo "debug_apk=Spybot-v${VERSION}-debug.apk" >> $GITHUB_OUTPUT
+              cp "$DEBUG_APK" "./Spybot-v${VERSION}-debug.apk"
+              DEBUG_OUTPUT="Spybot-v${VERSION}-debug.apk"
             fi
           fi
 
           if [ "$BUILD_TYPE" = "release" ] || [ "$BUILD_TYPE" = "both" ]; then
-            RELEASE_APK=$(find ./app -name "*release*.apk" | head -n1)
+            RELEASE_APK=$(find . -path "*/build/outputs/apk/*" -name "*release*.apk" | head -n1)
             if [ -n "$RELEASE_APK" ]; then
-              cp "$RELEASE_APK" "Spybot-v${VERSION}-release.apk"
-              echo "release_apk=Spybot-v${VERSION}-release.apk" >> $GITHUB_OUTPUT
+              cp "$RELEASE_APK" "./Spybot-v${VERSION}-release.apk"
+              RELEASE_OUTPUT="Spybot-v${VERSION}-release.apk"
             fi
           fi
 
-      - uses: actions/upload-artifact@v4
+          echo "debug_apk=$DEBUG_OUTPUT" >> $GITHUB_OUTPUT
+          echo "release_apk=$RELEASE_OUTPUT" >> $GITHUB_OUTPUT
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
         if: ${{ steps.apk.outputs.debug_apk != '' }}
         with:
           name: ${{ steps.apk.outputs.debug_apk }}
           path: ./${{ steps.apk.outputs.debug_apk }}
           retention-days: 30
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
         if: ${{ steps.apk.outputs.release_apk != '' }}
         with:
           name: ${{ steps.apk.outputs.release_apk }}
@@ -131,7 +164,7 @@ jobs:
           retention-days: 30
 
       - name: Create Release
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && env.CREATE_RELEASE == 'yes'))
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && env.CREATE_RELEASE == 'yes')) && (steps.apk.outputs.debug_apk != '' || steps.apk.outputs.release_apk != '')
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version_name }}
