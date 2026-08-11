@@ -65,18 +65,40 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             npm install --legacy-peer-deps || npm install
+            
+            # Remove Termux AAPT2 overrides if present
             find . -name "gradle.properties" -not -path "*/node_modules/*" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
             
-            # Ensure plugin folder and dummy build script exist without syntax errors
-            mkdir -p android/capacitor-cordova-android-plugins
-            echo "// Dummy variables" > android/capacitor-cordova-android-plugins/cordova.variables.gradle
-            
-            if [ ! -f "android/capacitor-cordova-android-plugins/build.gradle" ]; then
-              echo "apply plugin: 'com.android.library'" > android/capacitor-cordova-android-plugins/build.gradle
-              echo "android { compileSdkVersion 34 }" >> android/capacitor-cordova-android-plugins/build.gradle
-            fi
-            
+            # Step 1: Run sync so Capacitor builds plugin structures
             npx cap sync android || true
+            
+            # Step 2: Ensure capacitor-cordova-android-plugins directory exists
+            PLUGINS_DIR="android/capacitor-cordova-android-plugins"
+            mkdir -p "$PLUGINS_DIR"
+            
+            # Step 3: Create cordova.variables.gradle if missing
+            VAR_FILE="$PLUGINS_DIR/cordova.variables.gradle"
+            if [ ! -f "$VAR_FILE" ] || [ ! -s "$VAR_FILE" ]; then
+              echo "// Auto-generated cordova variables" > "$VAR_FILE"
+              echo "ext {" >> "$VAR_FILE"
+              echo "}" >> "$VAR_FILE"
+            fi
+
+            # Step 4: Write valid build.gradle with AGP 8+ compliant namespace
+            GRADLE_FILE="$PLUGINS_DIR/build.gradle"
+            echo "apply plugin: 'com.android.library'" > "$GRADLE_FILE"
+            echo "" >> "$GRADLE_FILE"
+            echo "android {" >> "$GRADLE_FILE"
+            echo "    namespace 'com.capacitor.cordova.plugins'" >> "$GRADLE_FILE"
+            echo "    compileSdk 34" >> "$GRADLE_FILE"
+            echo "    defaultConfig {" >> "$GRADLE_FILE"
+            echo "        minSdk 22" >> "$GRADLE_FILE"
+            echo "        targetSdk 34" >> "$GRADLE_FILE"
+            echo "    }" >> "$GRADLE_FILE"
+            echo "    lintOptions {" >> "$GRADLE_FILE"
+            echo "        abortOnError false" >> "$GRADLE_FILE"
+            echo "    }" >> "$GRADLE_FILE"
+            echo "}" >> "$GRADLE_FILE"
           fi
 
       - name: Determine Version
@@ -140,10 +162,10 @@ jobs:
 
           echo "Building with BUILD_TYPE: $BUILD_TYPE"
           case "$BUILD_TYPE" in
-            debug) ./gradlew assembleDebug ;;
-            release) ./gradlew assembleRelease ;;
-            both) ./gradlew assembleDebug assembleRelease ;;
-            *) ./gradlew assembleRelease ;;
+            debug) ./gradlew assembleDebug --no-daemon ;;
+            release) ./gradlew assembleRelease --no-daemon ;;
+            both) ./gradlew assembleDebug assembleRelease --no-daemon ;;
+            *) ./gradlew assembleRelease --no-daemon ;;
           esac
 
       - name: Prepare APKs
