@@ -61,20 +61,39 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - name: Install Dependencies & Prepare Capacitor
+      - name: Install Dependencies & Prepare Capacitor Modules
         run: |
           if [ -f "package.json" ]; then
-            npm install
-            
+            npm install --legacy-peer-deps || npm install
+
             # Remove Termux specific AAPT2 override if present
             find . -name "gradle.properties" -not -path "*/node_modules/*" -exec sed -i '/android.aapt2FromMavenOverride/d' {} +
+
+            # Run Capacitor Sync
+            npx cap sync android || npx cap sync || true
+
+            # Fix missing capacitor-cordova-android-plugins module if sync didn't create it
+            PLUGINS_DIR="android/capacitor-cordova-android-plugins"
+            mkdir -p "$PLUGINS_DIR"
             
-            # Fix missing cordova plugins folder for Capacitor
-            mkdir -p android/capacitor-cordova-android-plugins
-            touch android/capacitor-cordova-android-plugins/cordova.variables.gradle
-            
-            # Sync Capacitor
-            npx cap sync android || true
+            if [ ! -f "$PLUGINS_DIR/cordova.variables.gradle" ]; then
+              echo "// Dummy cordova variables" > "$PLUGINS_DIR/cordova.variables.gradle"
+            fi
+
+            if [ ! -f "$PLUGINS_DIR/build.gradle" ]; then
+              cat << 'EOF' > "$PLUGINS_DIR/build.gradle"
+apply plugin: 'com.android.library'
+
+android {
+    namespace "com.capacitor.cordova.plugins"
+    compileSdkVersion 34
+    defaultConfig {
+        minSdkVersion 22
+        targetSdkVersion 34
+    }
+}
+EOF
+            fi
           fi
 
       - name: Determine Version
